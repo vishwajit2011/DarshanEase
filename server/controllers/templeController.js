@@ -1,20 +1,17 @@
 const Temple = require("../models/Temple");
+const { put } = require("@vercel/blob");
 
 // =========================
 // Get all active temples
 // =========================
 
-const getTemples = async (
-  req,
-  res
-) => {
+const getTemples = async (req, res) => {
   try {
-    const temples =
-      await Temple.find({
-        isActive: true,
-      }).sort({
-        createdAt: -1,
-      });
+    const temples = await Temple.find({
+      isActive: true,
+    }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       success: true,
@@ -22,15 +19,11 @@ const getTemples = async (
       temples,
     });
   } catch (error) {
-    console.error(
-      "Get temples error:",
-      error
-    );
+    console.error("Get temples error:", error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Server error while fetching temples",
+      message: "Server error while fetching temples",
     });
   }
 };
@@ -39,16 +32,12 @@ const getTemples = async (
 // Get Single Temple
 // =========================
 
-const getTempleById = async (
-  req,
-  res
-) => {
+const getTempleById = async (req, res) => {
   try {
-    const temple =
-      await Temple.findOne({
-        _id: req.params.id,
-        isActive: true,
-      });
+    const temple = await Temple.findOne({
+      _id: req.params.id,
+      isActive: true,
+    });
 
     if (!temple) {
       return res.status(404).json({
@@ -62,25 +51,18 @@ const getTempleById = async (
       temple,
     });
   } catch (error) {
-    console.error(
-      "Get temple error:",
-      error
-    );
+    console.error("Get temple error:", error);
 
-    if (
-      error.name === "CastError"
-    ) {
+    if (error.name === "CastError") {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid temple ID",
+        message: "Invalid temple ID",
       });
     }
 
     res.status(500).json({
       success: false,
-      message:
-        "Server error while fetching temple",
+      message: "Server error while fetching temple",
     });
   }
 };
@@ -89,24 +71,11 @@ const getTempleById = async (
 // Create Temple
 // =========================
 
-const createTemple = async (
-  req,
-  res
-) => {
+const createTemple = async (req, res) => {
   try {
-    console.log(
-      "========== TEMPLE CREATE =========="
-    );
-
-    console.log(
-      "Body:",
-      req.body
-    );
-
-    console.log(
-      "Files:",
-      req.files
-    );
+    console.log("========== TEMPLE CREATE ==========");
+    console.log("Body:", req.body);
+    console.log("Files:", req.files);
 
     const {
       name,
@@ -118,24 +87,29 @@ const createTemple = async (
     } = req.body;
 
     // =========================
-    // Image Paths
+    // Upload Images to Vercel Blob
     // =========================
 
     const imagePaths = [];
 
-    if (
-      req.files &&
-      req.files.length > 0
-    ) {
-      req.files.forEach((file) => {
-        imagePaths.push(
-          `/uploads/temples/${file.filename}`
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const blob = await put(
+          `temples/${Date.now()}-${file.originalname}`,
+          file.buffer,
+          {
+            access: "public",
+            contentType: file.mimetype,
+          }
         );
-      });
+
+        imagePaths.push(blob.url);
+      }
     }
 
-    // Keep first image in old
-    // image field for compatibility.
+    // Keep first image in old image field
+    // for compatibility.
+
     const firstImage =
       imagePaths.length > 0
         ? imagePaths[0]
@@ -145,17 +119,16 @@ const createTemple = async (
     // Create Temple
     // =========================
 
-    const temple =
-      await Temple.create({
-        name,
-        description,
-        location,
-        city,
-        state,
-        timings,
-        image: firstImage,
-        images: imagePaths,
-      });
+    const temple = await Temple.create({
+      name,
+      description,
+      location,
+      city,
+      state,
+      timings,
+      image: firstImage,
+      images: imagePaths,
+    });
 
     console.log(
       "Saved temple images:",
@@ -164,8 +137,7 @@ const createTemple = async (
 
     res.status(201).json({
       success: true,
-      message:
-        "Temple created successfully",
+      message: "Temple created successfully",
       temple,
     });
   } catch (error) {
@@ -174,30 +146,24 @@ const createTemple = async (
       error
     );
 
-    if (
-      error.name ===
-      "ValidationError"
-    ) {
+    if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
         message: error.message,
       });
     }
 
-    if (
-      error.name ===
-      "MulterError"
-    ) {
+    if (error.name === "MulterError") {
       return res.status(400).json({
         success: false,
-        message:
-          `Image upload error: ${error.message}`,
+        message: `Image upload error: ${error.message}`,
       });
     }
 
     res.status(500).json({
       success: false,
       message:
+        error.message ||
         "Server error while creating temple",
     });
   }
@@ -207,35 +173,23 @@ const createTemple = async (
 // Update Temple
 // =========================
 
-const updateTemple = async (
-  req,
-  res
-) => {
+const updateTemple = async (req, res) => {
   try {
     console.log(
       "========== TEMPLE UPDATE =========="
     );
 
-    console.log(
-      "Body:",
-      req.body
-    );
+    console.log("Body:", req.body);
+    console.log("Files:", req.files);
 
-    console.log(
-      "Files:",
-      req.files
+    const temple = await Temple.findById(
+      req.params.id
     );
-
-    const temple =
-      await Temple.findById(
-        req.params.id
-      );
 
     if (!temple) {
       return res.status(404).json({
         success: false,
-        message:
-          "Temple not found",
+        message: "Temple not found",
       });
     }
 
@@ -253,12 +207,10 @@ const updateTemple = async (
       name ?? temple.name;
 
     temple.description =
-      description ??
-      temple.description;
+      description ?? temple.description;
 
     temple.location =
-      location ??
-      temple.location;
+      location ?? temple.location;
 
     temple.city =
       city ?? temple.city;
@@ -270,8 +222,7 @@ const updateTemple = async (
       timings ?? temple.timings;
 
     temple.isActive =
-      isActive ??
-      temple.isActive;
+      isActive ?? temple.isActive;
 
     // =========================
     // New Images Uploaded
@@ -281,18 +232,25 @@ const updateTemple = async (
       req.files &&
       req.files.length > 0
     ) {
-      const imagePaths =
-        req.files.map(
-          (file) =>
-            `/uploads/temples/${file.filename}`
+      const imagePaths = [];
+
+      for (const file of req.files) {
+        const blob = await put(
+          `temples/${Date.now()}-${file.originalname}`,
+          file.buffer,
+          {
+            access: "public",
+            contentType: file.mimetype,
+          }
         );
 
-      temple.images =
-        imagePaths;
+        imagePaths.push(blob.url);
+      }
+
+      temple.images = imagePaths;
 
       // Keep old image field compatible
-      temple.image =
-        imagePaths[0];
+      temple.image = imagePaths[0];
 
       console.log(
         "Updated temple images:",
@@ -306,6 +264,7 @@ const updateTemple = async (
 
     // If old temple has image but
     // no images array, convert it.
+
     if (
       (!temple.images ||
         temple.images.length === 0) &&
@@ -320,8 +279,7 @@ const updateTemple = async (
 
     res.status(200).json({
       success: true,
-      message:
-        "Temple updated successfully",
+      message: "Temple updated successfully",
       temple,
     });
   } catch (error) {
@@ -330,31 +288,21 @@ const updateTemple = async (
       error
     );
 
-    if (
-      error.name ===
-      "ValidationError"
-    ) {
+    if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
         message: error.message,
       });
     }
 
-    if (
-      error.name ===
-      "CastError"
-    ) {
+    if (error.name === "CastError") {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid temple ID",
+        message: "Invalid temple ID",
       });
     }
 
-    if (
-      error.name ===
-      "MulterError"
-    ) {
+    if (error.name === "MulterError") {
       return res.status(400).json({
         success: false,
         message:
@@ -365,6 +313,7 @@ const updateTemple = async (
     res.status(500).json({
       success: false,
       message:
+        error.message ||
         "Server error while updating temple",
     });
   }
@@ -374,21 +323,16 @@ const updateTemple = async (
 // Delete / Deactivate Temple
 // =========================
 
-const deleteTemple = async (
-  req,
-  res
-) => {
+const deleteTemple = async (req, res) => {
   try {
-    const temple =
-      await Temple.findById(
-        req.params.id
-      );
+    const temple = await Temple.findById(
+      req.params.id
+    );
 
     if (!temple) {
       return res.status(404).json({
         success: false,
-        message:
-          "Temple not found",
+        message: "Temple not found",
       });
     }
 
@@ -407,13 +351,10 @@ const deleteTemple = async (
       error
     );
 
-    if (
-      error.name === "CastError"
-    ) {
+    if (error.name === "CastError") {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid temple ID",
+        message: "Invalid temple ID",
       });
     }
 

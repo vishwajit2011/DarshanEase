@@ -1,56 +1,19 @@
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
 // =========================
-// Upload Directory
+// Multer Memory Storage
 // =========================
+// Files are kept in memory temporarily.
+// They will be uploaded to Vercel Blob
+// by the controller.
 
-const uploadDirectory = path.join(
-  __dirname,
-  "..",
-  "uploads",
-  "temples"
-);
-
-// Create upload directory automatically
-if (!fs.existsSync(uploadDirectory)) {
-  fs.mkdirSync(uploadDirectory, {
-    recursive: true,
-  });
-}
-
-// =========================
-// Storage
-// =========================
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDirectory);
-  },
-
-  filename: (req, file, cb) => {
-    const extension =
-      path.extname(file.originalname);
-
-    const uniqueName =
-      `temple-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}${extension}`;
-
-    cb(null, uniqueName);
-  },
-});
+const storage = multer.memoryStorage();
 
 // =========================
 // File Filter
 // =========================
 
-const fileFilter = (
-  req,
-  file,
-  cb
-) => {
+const fileFilter = (req, file, cb) => {
   const allowedTypes = [
     "image/jpeg",
     "image/jpg",
@@ -58,9 +21,7 @@ const fileFilter = (
     "image/webp",
   ];
 
-  if (
-    allowedTypes.includes(file.mimetype)
-  ) {
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(
@@ -79,7 +40,6 @@ const fileFilter = (
 const upload = multer({
   storage,
   fileFilter,
-
   limits: {
     fileSize: 5 * 1024 * 1024,
     files: 8,
