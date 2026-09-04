@@ -100,6 +100,8 @@ const createTemple = async (req, res) => {
           {
             access: "public",
             contentType: file.mimetype,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN,
+            storeId: process.env.BLOB_STORE_ID,
           }
         );
 
@@ -241,6 +243,8 @@ const updateTemple = async (req, res) => {
           {
             access: "public",
             contentType: file.mimetype,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN,
+            storeId: process.env.BLOB_STORE_ID,
           }
         );
 
@@ -250,6 +254,7 @@ const updateTemple = async (req, res) => {
       temple.images = imagePaths;
 
       // Keep old image field compatible
+
       temple.image = imagePaths[0];
 
       console.log(
