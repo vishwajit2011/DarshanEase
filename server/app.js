@@ -5,6 +5,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 const path = require("path");
 
+const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const templeRoutes = require("./routes/templeRoutes");
 const darshanSlotRoutes = require("./routes/darshanSlotRoutes");
@@ -13,6 +15,24 @@ const donationRoutes = require("./routes/donationRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
+
+// =====================================================
+// DATABASE CONNECTION
+// =====================================================
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+    });
+  }
+});
 
 // =====================================================
 // MIDDLEWARE
@@ -30,19 +50,9 @@ app.use(
 
 app.use(morgan("dev"));
 
-
 // =====================================================
 // UPLOADED IMAGES
 // =====================================================
-
-// Makes files inside /uploads accessible
-// from the browser.
-//
-// Example file:
-// server/uploads/temples/abc123.jpg
-//
-// Browser URL:
-// http://localhost:5000/uploads/temples/abc123.jpg
 
 app.use(
   "/uploads",
@@ -50,7 +60,6 @@ app.use(
     path.join(__dirname, "uploads")
   )
 );
-
 
 // =====================================================
 // AUTHENTICATION ROUTES
@@ -61,7 +70,6 @@ app.use(
   authRoutes
 );
 
-
 // =====================================================
 // TEMPLE ROUTES
 // =====================================================
@@ -70,7 +78,6 @@ app.use(
   "/api/temples",
   templeRoutes
 );
-
 
 // =====================================================
 // DARSHAN SLOT ROUTES
@@ -81,7 +88,6 @@ app.use(
   darshanSlotRoutes
 );
 
-
 // =====================================================
 // BOOKING ROUTES
 // =====================================================
@@ -90,7 +96,6 @@ app.use(
   "/api/bookings",
   bookingRoutes
 );
-
 
 // =====================================================
 // DONATION ROUTES
@@ -101,7 +106,6 @@ app.use(
   donationRoutes
 );
 
-
 // =====================================================
 // DASHBOARD ROUTES
 // =====================================================
@@ -110,7 +114,6 @@ app.use(
   "/api/dashboard",
   dashboardRoutes
 );
-
 
 // =====================================================
 // MAIN API
@@ -122,7 +125,6 @@ app.get("/", (req, res) => {
     message: "Welcome to DarshanEase API",
   });
 });
-
 
 // =====================================================
 // TEST API
@@ -136,9 +138,8 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-
 // =====================================================
-// 404 - ROUTE NOT FOUND
+// 404
 // =====================================================
 
 app.use((req, res) => {
@@ -149,28 +150,19 @@ app.use((req, res) => {
   });
 });
 
-
 // =====================================================
 // GLOBAL ERROR HANDLER
 // =====================================================
 
-app.use(
-  (err, req, res, next) => {
-    console.error(
-      "Global error:",
-      err
-    );
+app.use((err, req, res, next) => {
+  console.error("Global error:", err);
 
-    res.status(
-      err.status || 500
-    ).json({
-      success: false,
-      message:
-        err.message ||
-        "Internal server error",
-    });
-  }
-);
-
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      err.message ||
+      "Internal server error",
+  });
+});
 
 module.exports = app;
