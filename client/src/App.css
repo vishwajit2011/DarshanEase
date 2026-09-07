@@ -7325,3 +7325,84 @@ button:hover {
     flex-direction: column;
   }
 }
+
+/* ==========================================
+   DONATION BUTTONS
+   ========================================== */
+
+.page button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Quick Amount Buttons */
+
+.page .form-group > div {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.page .form-group > div button {
+  min-width: 105px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #8b5cf6,
+    #6d28d9
+  );
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(109, 40, 217, 0.25);
+}
+
+.page .form-group > div button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(109, 40, 217, 0.4);
+}
+
+.page .form-group > div button:active {
+  transform: translateY(0);
+}
+
+/* Donate Now Button */
+
+.page form > button[type="submit"] {
+  display: block;
+  margin: 28px auto 0;
+  min-width: 180px;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #a855f7,
+    #7c3aed
+  );
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+}
+
+.page form > button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.45);
+}
+
+.page form > button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+.page form > button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
